@@ -2,6 +2,16 @@
   padding: 10px;
 }
 
+.section p i:after {
+  width: 10px;
+  height: 10px;
+  content: ' + '
+}
+
+.section i:last-child:after {
+  content: ''
+}
+
 .form label span {
   display: none
 }

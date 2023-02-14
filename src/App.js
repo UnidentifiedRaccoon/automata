@@ -6,6 +6,7 @@ const getNumberFromWord = (alphabet, word) => {
     let k = word.length
     let n = alphabet.length
     let N = 0
+    const algoCommands = []
     for (const char of word) {
         const pos = alphabet.indexOf(char) + 1
         if (pos === 0) {
@@ -13,8 +14,10 @@ const getNumberFromWord = (alphabet, word) => {
             return 0
         }
         N += pos * Math.pow(n, --k)
+        algoCommands.push([pos, n, k])
+
     }
-    return  N
+    return  [N, algoCommands]
 }
 
 const getWordFromNumber = (alphabet, number) => {
@@ -32,26 +35,47 @@ const getWordFromNumber = (alphabet, number) => {
         N = Math.floor(N / n)
     }
     chars = chars.reverse()
+    // chars = chars.filter(Boolean)
     console.log(chars)
     return chars.map(char => alphabet[char-1]).join('')
+}
+
+const filterAlphabet = (arr) => {
+    const set = new Set()
+    const filteredArr = []
+    for (const char of arr) {
+        if (set.has(char)) continue
+        if (char.length < 1 || char.length > 1) continue
+        set.add(char)
+        filteredArr.push(char)
+    }
+    return filteredArr
 }
 
 
 const reducer = (state, action) => {
     switch (action.type) {
-        case 'alphabet': return {
-            ...state,
-            alphabet: action.payload
+        case 'alphabet': {
+            return {
+                ...state,
+                alphabet: filterAlphabet(action.payload)
+            }
         }
-        case 'word': return {
-            ...state,
-            word: action.payload,
-            number: getNumberFromWord(state.alphabet, action.payload)
+        case 'word': {
+            const [number, algoCommands] = getNumberFromWord(state.alphabet, action.payload)
+            return {
+                ...state,
+                word: action.payload,
+                number,
+                algoCommands,
+            }
         }
-        case 'number': return {
-            ...state,
-            number: action.payload,
-            word: getWordFromNumber(state.alphabet, action.payload)
+        case 'number': {
+            return {
+                ...state,
+                number: action.payload,
+                word: getWordFromNumber(state.alphabet, action.payload)
+            }
         }
     }
 }
@@ -59,7 +83,8 @@ const reducer = (state, action) => {
 const initial = {
     alphabet: [],
     word: '',
-    number: ''
+    number: '',
+    algoCommands: []
 }
 
 function App() {
@@ -82,6 +107,10 @@ function App() {
     e.preventDefault();
     setContent({type: "number", payload: e.target.number.value})
   }
+
+  console.log(content.algoCommands)
+    const algo = content.algoCommands.map(([pos, n, k], i) => <i key={i}>{pos}*{n}<sup>{k}</sup></i>)
+
 
   return (
     <div className="App">
@@ -109,7 +138,7 @@ function App() {
                   <button>Go</button>
               </form>
           </section>
-          <section>
+          <section className={style.section}>
               <p>
                   {"Алфавит: " + JSON.stringify(content.alphabet)}
               </p>
@@ -118,6 +147,9 @@ function App() {
               </p>
               <p>
                   {"Число: " + content.number}
+              </p>
+              <p>
+                  "Слово по формуле: " {algo}
               </p>
           </section>
       </header>
